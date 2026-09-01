@@ -12,7 +12,8 @@ import {
   Employee, 
   DailyAttendanceRecord, 
   AreaType, 
-  AttendanceCode 
+  AttendanceCode,
+  NonWorkedHoursRecord
 } from '../../types/attendance';
 import { AttendanceCarousel } from './AttendanceCarousel';
 
@@ -24,6 +25,7 @@ interface AttendanceTakerViewProps {
   onBulkSetPresent: (areaFilter?: AreaType) => void;
   onOpenPermitForWorker: (worker: Employee) => void;
   onOpenSendEmail?: () => void;
+  dailyNonWorkedHours?: NonWorkedHoursRecord[];
 }
 
 export const AttendanceTakerView: React.FC<AttendanceTakerViewProps> = ({
@@ -33,7 +35,8 @@ export const AttendanceTakerView: React.FC<AttendanceTakerViewProps> = ({
   onUpdateStatus,
   onBulkSetPresent,
   onOpenPermitForWorker,
-  onOpenSendEmail
+  onOpenSendEmail,
+  dailyNonWorkedHours = []
 }) => {
   const [viewMode, setViewMode] = useState<'CAROUSEL' | 'TABLE'>('CAROUSEL');
   const [selectedArea, setSelectedArea] = useState<string>('ALL');
@@ -115,6 +118,7 @@ export const AttendanceTakerView: React.FC<AttendanceTakerViewProps> = ({
           attendanceRecords={attendanceRecords}
           onUpdateStatus={onUpdateStatus}
           onOpenPermitForWorker={onOpenPermitForWorker}
+          dailyNonWorkedHours={dailyNonWorkedHours}
           selectedArea={selectedArea}
           onSelectArea={setSelectedArea}
         />
@@ -250,6 +254,16 @@ export const AttendanceTakerView: React.FC<AttendanceTakerViewProps> = ({
                             >
                               P (Perm)
                             </button>
+
+                            {/* Mostrar horas si hay un registro de permiso */}
+                            {record.status === 'P' && dailyNonWorkedHours.some(h => h.workerId === record.workerId) && (
+                              <div style={{ marginLeft: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem', color: 'var(--color-permission)', background: 'var(--color-permission-bg)', padding: '0.15rem 0.4rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-permission-border)' }}>
+                                <Hourglass size={12} />
+                                <span>
+                                  {dailyNonWorkedHours.filter(h => h.workerId === record.workerId).reduce((acc, curr) => acc + curr.totalHours, 0)} hrs
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </td>
 

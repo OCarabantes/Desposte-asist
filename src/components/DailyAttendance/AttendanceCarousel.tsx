@@ -17,7 +17,8 @@ import {
   Employee, 
   DailyAttendanceRecord, 
   AttendanceCode, 
-  AreaType 
+  AreaType,
+  NonWorkedHoursRecord
 } from '../../types/attendance';
 
 interface AttendanceCarouselProps {
@@ -28,6 +29,7 @@ interface AttendanceCarouselProps {
   onOpenPermitForWorker: (worker: Employee) => void;
   selectedArea: string;
   onSelectArea: (area: string) => void;
+  dailyNonWorkedHours?: NonWorkedHoursRecord[];
 }
 
 export const AttendanceCarousel: React.FC<AttendanceCarouselProps> = ({
@@ -37,7 +39,8 @@ export const AttendanceCarousel: React.FC<AttendanceCarouselProps> = ({
   onUpdateStatus,
   onOpenPermitForWorker,
   selectedArea,
-  onSelectArea
+  onSelectArea,
+  dailyNonWorkedHours = []
 }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
@@ -293,6 +296,17 @@ export const AttendanceCarousel: React.FC<AttendanceCarouselProps> = ({
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.25rem 0.65rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-subtle)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               <span>Dotación Oficial Karmac • Asistencia de Sala</span>
             </div>
+
+            {currentStatus === 'P' && dailyNonWorkedHours.some(h => h.workerId === currentEmp.id) && (
+              <div style={{ marginTop: '0.85rem', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-permission)', background: 'var(--color-permission-bg)', padding: '0.3rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-permission-border)', fontSize: '0.8rem', fontWeight: 600 }}>
+                  <Hourglass size={14} />
+                  <span>
+                    Tiempo de Permiso: {dailyNonWorkedHours.filter(h => h.workerId === currentEmp.id).reduce((acc, curr) => acc + curr.totalHours, 0)} Hrs registradas
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Card Bottom: Tactile 1-Click Action Buttons */}

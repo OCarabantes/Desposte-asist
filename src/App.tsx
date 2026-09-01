@@ -237,6 +237,7 @@ export const App: React.FC = () => {
               onBulkSetPresent={handleBulkSetPresent}
               onOpenPermitForWorker={handleOpenPermitForWorker}
               onOpenSendEmail={() => setIsSendEmailOpen(true)}
+              dailyNonWorkedHours={nonWorkedHours.filter(h => h.date === currentDate)}
             />
           )}
 
