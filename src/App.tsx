@@ -7,6 +7,7 @@ import { NonWorkedHoursView } from './components/NonWorkedHours/NonWorkedHoursVi
 import { MonthlyMatrixView } from './components/MonthlyMatrix/MonthlyMatrixView';
 import { StaffView } from './components/StaffManagement/StaffView';
 import { SettingsView } from './components/Settings/SettingsView';
+import { SystemUsersView } from './components/SystemUsers/SystemUsersView';
 import { NonWorkedHoursModal } from './components/NonWorkedHours/NonWorkedHoursModal';
 import { SendEmailModal } from './components/EmailReports/SendEmailModal';
 import { LoginView } from './components/Auth/LoginView';
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [currentDate, setCurrentDate] = useState<string>('2026-08-10');
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   // Modals
   const [isNonWorkedModalOpen, setIsNonWorkedModalOpen] = useState<boolean>(false);
@@ -170,15 +172,26 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-container">
+      {/* Mobile Sidebar Overlay */}
+      <div 
+        className={`mobile-sidebar-overlay ${isSidebarOpen ? 'active' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
       {/* Navigation Sidebar */}
       <Sidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          setIsSidebarOpen(false); // Close on selection in mobile
+        }}
         config={config}
         theme={theme}
         onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
         session={session}
         onLogout={handleLogout}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -194,6 +207,7 @@ export const App: React.FC = () => {
           }}
           onExportExcel={handleExportExcel}
           onOpenSendEmail={() => setIsSendEmailOpen(true)}
+          onMenuToggle={() => setIsSidebarOpen(true)}
         />
 
         {/* Dynamic View Body */}
@@ -282,6 +296,10 @@ export const App: React.FC = () => {
               onUpdateConfig={handleUpdateConfig}
               onResetToDefault={handleResetToDefault}
             />
+          )}
+
+          {activeTab === 'system-users' && (
+            <SystemUsersView />
           )}
         </div>
       </main>

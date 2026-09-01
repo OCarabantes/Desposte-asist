@@ -9,7 +9,8 @@ import {
   Sun,
   Moon,
   LogOut,
-  UserCheck
+  UserCheck,
+  Shield
 } from 'lucide-react';
 import { PlantConfig } from '../../types/attendance';
 import { UserSession } from '../../services/authService';
@@ -21,7 +22,8 @@ export type NavTab =
   | 'non-worked-hours' 
   | 'monthly-matrix' 
   | 'staff' 
-  | 'settings';
+  | 'settings'
+  | 'system-users';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -31,6 +33,8 @@ interface SidebarProps {
   onToggleTheme: () => void;
   session: UserSession | null;
   onLogout: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -40,7 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   theme,
   onToggleTheme,
   session,
-  onLogout
+  onLogout,
+  isOpen,
+  onClose
 }) => {
   const navItems = [
     {
@@ -78,14 +84,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Configuración',
       sublabel: 'Turnos & Correos RRHH',
       icon: Settings
+    },
+    {
+      id: 'system-users' as NavTab,
+      label: 'Usuarios del Sistema',
+      sublabel: 'Accesos & Seguridad',
+      icon: Shield
     }
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
       {/* Brand & Header */}
-      <div style={{ padding: '1.25rem 1.25rem', borderBottom: '1px solid var(--border-medium)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+      <div style={{ padding: '1.25rem 1.25rem', borderBottom: '1px solid var(--border-medium)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           <img 
             src={logoImg} 
             alt="Karmac" 

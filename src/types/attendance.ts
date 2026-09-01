@@ -120,10 +120,20 @@ export interface EmailDispatchLog {
   recipients: string[];
   ccRecipients?: string[];
   subject: string;
-  reportType: 'DAILY_SUMMARY' | 'DISCREPANCIES_ONLY' | 'PERMITS_ONLY';
-  status: 'SENT' | 'SIMULATED';
+  reportType: string;
+  status: 'SENT' | 'FAILED' | 'PENDING';
   summary: string;
   sentBy: string;
+}
+
+export interface SystemUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  area: AreaType;
+  createdAt?: string;
+  password?: string; // used for creating/updating
 }
 
 export interface PlantConfig {

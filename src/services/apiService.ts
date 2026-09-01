@@ -3,7 +3,8 @@ import {
   DailyAttendanceRecord, 
   NonWorkedHoursRecord, 
   PlantConfig, 
-  EmailDispatchLog 
+  EmailDispatchLog,
+  SystemUser
 } from '../types/attendance';
 
 export class ApiService {
@@ -164,6 +165,45 @@ export class ApiService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(log)
       });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  // System Users (Admins)
+  static async fetchSystemUsers(): Promise<SystemUser[] | null> {
+    try {
+      const res = await fetch('/api/users');
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  static async saveSystemUser(user: SystemUser | Omit<SystemUser, 'id' | 'createdAt'>): Promise<{ success: boolean; data?: SystemUser; error?: string }> {
+    try {
+      const method = (user as SystemUser).id ? 'PUT' : 'POST';
+      const res = await fetch('/api/users', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+      if (res.ok) {
+        return { success: true, data: await res.json() };
+      } else {
+        const err = await res.json();
+        return { success: false, error: err.error || 'Error al guardar el usuario' };
+      }
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Error de red al guardar el usuario' };
+    }
+  }
+
+  static async deleteSystemUser(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/users?id=${id}`, { method: 'DELETE' });
       return res.ok;
     } catch {
       return false;

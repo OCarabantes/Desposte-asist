@@ -4,7 +4,8 @@ import {
   NonWorkedHoursRecord, 
   PlantConfig, 
   AttendanceCode,
-  EmailDispatchLog
+  EmailDispatchLog,
+  SystemUser
 } from '../types/attendance';
 import { INITIAL_EMPLOYEES, INITIAL_PLANT_CONFIG } from '../data/initialRoster';
 import { ApiService } from './apiService';
@@ -16,7 +17,8 @@ const STORAGE_KEYS = {
   PLANT_CONFIG: 'karmac_desposte_config_v1',
   EMAIL_LOGS: 'karmac_desposte_email_logs_v1',
   CURRENT_DATE: 'karmac_desposte_current_date_v1',
-  THEME: 'karmac_desposte_theme_v1'
+  THEME: 'karmac_desposte_theme_v1',
+  SYSTEM_USERS: 'karmac_desposte_system_users_v1'
 };
 
 export class StorageService {
@@ -227,6 +229,54 @@ export class StorageService {
     return fullLog;
   }
 
+  // System Users
+  static getSystemUsers(): SystemUser[] {
+    const raw = localStorage.getItem(STORAGE_KEYS.SYSTEM_USERS);
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+
+  static saveSystemUsers(users: SystemUser[]): void {
+    localStorage.setItem(STORAGE_KEYS.SYSTEM_USERS, JSON.stringify(users));
+    window.dispatchEvent(new CustomEvent('karmac-users-updated'));
+  }
+
+  static async syncWithRemoteDb(): Promise<void> {
+    try {
+      this.purgeOldLocalData(5);
+
+      const [remoteEmps, remoteAtt, remoteHnt, remoteConfig, remoteUsers] = await Promise.all([
+        ApiService.fetchEmployees(),
+        ApiService.fetchAttendance(),
+        ApiService.fetchPermits(),
+        ApiService.fetchConfig(),
+        ApiService.fetchSystemUsers()
+      ]);
+
+      if (remoteEmps && remoteEmps.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(remoteEmps));
+      }
+      if (remoteAtt && remoteAtt.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(remoteAtt));
+      }
+      if (remoteHnt) {
+        localStorage.setItem(STORAGE_KEYS.NON_WORKED_HOURS, JSON.stringify(remoteHnt));
+      }
+      if (remoteConfig) {
+        localStorage.setItem(STORAGE_KEYS.PLANT_CONFIG, JSON.stringify(remoteConfig));
+      }
+      if (remoteUsers && remoteUsers.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.SYSTEM_USERS, JSON.stringify(remoteUsers));
+      }
+    } catch {
+      // Graceful fallback to localStorage
+    }
+  }
+
   /**
    * Automatically purges records older than 5 months (150 days) from localStorage
    */
@@ -245,34 +295,4 @@ export class StorageService {
     localStorage.setItem(STORAGE_KEYS.EMAIL_LOGS, JSON.stringify(allEmails));
   }
 
-  /**
-   * Sync initial data from PostgreSQL if available
-   */
-  static async syncWithRemoteDb(): Promise<void> {
-    try {
-      this.purgeOldLocalData(5);
-
-      const [remoteEmps, remoteAtt, remoteHnt, remoteConfig] = await Promise.all([
-        ApiService.fetchEmployees(),
-        ApiService.fetchAttendance(),
-        ApiService.fetchPermits(),
-        ApiService.fetchConfig()
-      ]);
-
-      if (remoteEmps && remoteEmps.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(remoteEmps));
-      }
-      if (remoteAtt && remoteAtt.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(remoteAtt));
-      }
-      if (remoteHnt) {
-        localStorage.setItem(STORAGE_KEYS.NON_WORKED_HOURS, JSON.stringify(remoteHnt));
-      }
-      if (remoteConfig) {
-        localStorage.setItem(STORAGE_KEYS.PLANT_CONFIG, JSON.stringify(remoteConfig));
-      }
-    } catch {
-      // Graceful fallback to localStorage
-    }
-  }
 }

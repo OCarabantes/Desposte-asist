@@ -5,7 +5,8 @@ import {
   ChevronRight, 
   Download, 
   PlusCircle, 
-  Mail
+  Mail,
+  Menu
 } from 'lucide-react';
 import { PlantConfig } from '../../types/attendance';
 
@@ -16,6 +17,7 @@ interface HeaderProps {
   onOpenNewPermit: () => void;
   onExportExcel: () => void;
   onOpenSendEmail: () => void;
+  onMenuToggle?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,7 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   config,
   onOpenNewPermit,
   onExportExcel,
-  onOpenSendEmail
+  onOpenSendEmail,
+  onMenuToggle
 }) => {
   const handleShiftDate = (days: number) => {
     const d = new Date(currentDate + 'T00:00:00');
@@ -55,6 +58,13 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="top-bar">
       {/* Date controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <button 
+          className="mobile-menu-btn" 
+          onClick={onMenuToggle}
+          title="Abrir menú"
+        >
+          <Menu size={20} />
+        </button>
         <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-md)', padding: '0.15rem 0.25rem' }}>
           <button 
             onClick={() => handleShiftDate(-1)} 
