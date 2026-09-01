@@ -117,28 +117,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Logged in User Badge */}
-        <div style={{ 
-          fontSize: '0.725rem', 
-          background: 'var(--bg-input)', 
-          padding: '0.45rem 0.6rem', 
-          borderRadius: 'var(--radius-md)',
-          marginTop: '0.6rem',
-          border: '1px solid var(--border-medium)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.45rem'
-        }}>
-          <UserCheck size={14} color="var(--color-present)" />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {session?.name || config.supervisorName}
-            </div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-              {session?.email || 'ssoruco@karmac.cl'}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Navigation List */}
@@ -212,6 +190,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
+        </div>
+
+        {/* Logged in User Badge */}
+        <div style={{ 
+          fontSize: '0.725rem', 
+          background: 'var(--bg-input)', 
+          padding: '0.45rem 0.6rem', 
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-medium)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          marginTop: '0.25rem'
+        }}>
+          <UserCheck size={14} color="var(--color-present)" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {session?.name || config.supervisorName}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+              {session?.email || 'ssoruco@karmac.cl'}
+            </div>
+          </div>
         </div>
 
         {/* Log Out Action */}
