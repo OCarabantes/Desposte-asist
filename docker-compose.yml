@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PORT=3000
+      # DEBES cambiar 'usuario' y 'contraseña' por las credenciales de tu PostgreSQL en el servidor.
+      # 'host.docker.internal' apuntará automáticamente al localhost de tu servidor Debian.
+      - DATABASE_URL=postgres://usuario:contraseña@host.docker.internal:5432/desposte
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M

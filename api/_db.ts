@@ -19,7 +19,7 @@ export function getDbPool(): pg.Pool | null {
   }
 
   if (!pool) {
-    const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+    const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1') || connectionString.includes('host.docker.internal');
     pool = new Pool({
       connectionString,
       ssl: isLocalhost ? false : { rejectUnauthorized: false },
