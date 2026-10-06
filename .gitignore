@@ -18,6 +18,7 @@ pids
 
 # Dependency directories
 node_modules/
+.npm-cache/
 jspm_packages/
 
 # TypeScript cache

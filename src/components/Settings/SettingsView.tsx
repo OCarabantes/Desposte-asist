@@ -7,10 +7,13 @@ import {
   RotateCcw,
   CheckCircle2,
   AlertTriangle,
-  Mail
+  Mail,
+  Download,
+  Database
 } from 'lucide-react';
 import { PlantConfig } from '../../types/attendance';
 import { StorageService } from '../../services/storageService';
+import { AuthService } from '../../services/authService';
 
 interface SettingsViewProps {
   config: PlantConfig;
@@ -25,6 +28,49 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 }) => {
   const [formData, setFormData] = useState<PlantConfig>(config);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
+  const [backupPassword, setBackupPassword] = useState('');
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [backupMessage, setBackupMessage] = useState('');
+  const [backupError, setBackupError] = useState(false);
+  const isAdmin = /\badmin\b/i.test(AuthService.getSession()?.role || '');
+
+  const handleBackup = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBackupLoading(true);
+    setBackupMessage('');
+    setBackupError(false);
+    try {
+      const response = await fetch('/api/backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: AuthService.getSession()?.email, password: backupPassword })
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.error || 'No se pudo descargar el respaldo.');
+      }
+      if (!response.headers.get('Content-Type')?.includes('application/gzip')) {
+        throw new Error('El servidor no tiene disponible la descarga de respaldos.');
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1]
+        || 'desposte-respaldo-completo.sql.gz';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setBackupMessage('Respaldo generado. Se inició la descarga del archivo.');
+    } catch (error) {
+      setBackupError(true);
+      setBackupMessage(error instanceof Error ? error.message : 'Error al descargar el respaldo.');
+    } finally {
+      setBackupPassword('');
+      setBackupLoading(false);
+    }
+  };
   const [emailsText, setEmailsText] = useState<string>(
     (config.hrEmailRecipients || ['cgarrido@karmac.cl', 'asistente.rrhh@karmac.cl']).join(', ')
   );
@@ -207,6 +253,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
       </form>
+
+      {isAdmin && (
+        <form className="card" onSubmit={handleBackup} aria-busy={backupLoading}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.5rem' }}>
+            <Database size={16} /> Respaldo completo de base de datos
+          </h3>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            Descarga un archivo SQL comprimido (.sql.gz) con todos los datos, tablas, índices,
+            relaciones y demás objetos de la base de datos conectada. Incluye usuarios y credenciales;
+            guárdelo en un lugar privado. Solo contiene los registros que aún existen en la base de datos.
+          </p>
+          <div className="input-group">
+            <label className="input-label" htmlFor="backup-password">Confirme su contraseña de administrador</label>
+            <input id="backup-password" className="input" type="password" autoComplete="current-password"
+              value={backupPassword} onChange={event => setBackupPassword(event.target.value)}
+              required disabled={backupLoading} />
+          </div>
+          <button type="submit" className="btn btn-primary btn-sm" disabled={backupLoading || !backupPassword}>
+            <Download size={14} />
+            <span>{backupLoading ? 'Generando respaldo…' : 'Descargar respaldo completo'}</span>
+          </button>
+          {backupMessage && <p role={backupError ? 'alert' : 'status'} style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: backupError ? 'var(--color-absent)' : 'var(--color-present)' }}>{backupMessage}</p>}
+        </form>
+      )}
 
       {/* Database Retention Policy Card */}
       <div className="card" style={{ border: '1px solid var(--border-medium)' }}>

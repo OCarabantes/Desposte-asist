@@ -22,6 +22,7 @@ import employeesHandler from './api/employees.ts';
 import initDbHandler from './api/init-db.ts';
 // @ts-ignore
 import usersHandler from './api/users.ts';
+import backupHandler from './api/backup.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,6 +60,7 @@ app.all('/api/email-logs', adaptVercelHandler(emailLogsHandler));
 app.all('/api/employees', adaptVercelHandler(employeesHandler));
 app.all('/api/init-db', adaptVercelHandler(initDbHandler));
 app.all('/api/users', adaptVercelHandler(usersHandler));
+app.all('/api/backup', adaptVercelHandler(backupHandler));
 
 // Serve static frontend files
 const distPath = path.join(__dirname, 'dist');
